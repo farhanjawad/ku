@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import re
 import csv
 import io
@@ -121,6 +121,9 @@ def create_id_cards_pdf(data):
     elements.append(Paragraph("Faculty ID Cards", title_style))
     elements.append(Spacer(1, 20))
     
+    # FIX: Create a custom centered paragraph style for the university name
+    center_style = ParagraphStyle(name='CenterStyle', parent=styles['Normal'], alignment=1) # 1 means centered
+    
     cards_data = []
     row = []
     
@@ -132,7 +135,8 @@ def create_id_cards_pdf(data):
             [Paragraph(f"<b>Designation:</b> {designation}", styles['Normal'])],
             [Paragraph(f"<b>Discipline:</b> {discipline}", styles['Normal'])],
             [Spacer(1, 15)],
-            [Paragraph("<font size='12' color='#2980b9'><b>Khulna University</b></font>", styles['Center'])]
+            # Apply the new center_style here
+            [Paragraph("<font size='12' color='#2980b9'><b>Khulna University</b></font>", center_style)]
         ]
         
         card_table = Table(card_content, colWidths=[230])
