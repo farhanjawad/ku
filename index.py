@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet
 import re
 import csv
 import io
@@ -121,9 +121,6 @@ def create_id_cards_pdf(data):
     elements.append(Paragraph("Faculty ID Cards", title_style))
     elements.append(Spacer(1, 20))
     
-    # FIX: Create a custom centered paragraph style for the university name
-    center_style = ParagraphStyle(name='CenterStyle', parent=styles['Normal'], alignment=1) # 1 means centered
-    
     cards_data = []
     row = []
     
@@ -131,18 +128,17 @@ def create_id_cards_pdf(data):
         name, designation, discipline, email = item
         
         card_content = [
-            [Paragraph(f"<b>Name:</b> {name}", styles['Normal'])],
-            [Paragraph(f"<b>Designation:</b> {designation}", styles['Normal'])],
-            [Paragraph(f"<b>Discipline:</b> {discipline}", styles['Normal'])],
+            [Paragraph(f" {name}", styles['Center'])],
+            [Paragraph(f" {designation}", styles['Center '])],
+            [Paragraph(f" {discipline}", styles['Center '])],
             [Spacer(1, 15)],
-            # Apply the new center_style here
-            [Paragraph("<font size='12' color='#2980b9'><b>Khulna University</b></font>", center_style)]
+            [Paragraph("<b>Khulna University</b>", styles['Center'])]
         ]
         
         card_table = Table(card_content, colWidths=[230])
         card_table.setStyle(TableStyle([
             ('BOX', (0,0), (-1,-1), 2, colors.HexColor('#34495e')), 
-            ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#ecf0f1')), 
+            ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#ffffff")), 
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
             ('BOTTOMPADDING', (0,0), (-1,-1), 8),
             ('TOPPADDING', (0,0), (-1,-1), 8),
@@ -186,7 +182,7 @@ def create_csv(data):
 def create_docx(data):
     buffer = io.BytesIO()
     doc = Document()
-    doc.add_heading('Faculty ID Cards', 0)
+    doc.add_heading('Teacher Data', 0)
 
     for item in data:
         name, designation, discipline, email = item
@@ -196,17 +192,12 @@ def create_docx(data):
         cell = table.cell(0, 0)
         
         p = cell.paragraphs[0]
-        p.add_run(f"Name: ").bold = True
         p.add_run(f"{name}\n")
-        p.add_run(f"Designation: ").bold = True
         p.add_run(f"{designation}\n")
-        p.add_run(f"Discipline: ").bold = True
-        p.add_run(f"{discipline}\n\n")
+        p.add_run(f"{discipline},\n\n")
         
         uni_run = p.add_run("Khulna University")
-        uni_run.bold = True
-        uni_run.font.color.rgb = RGBColor(41, 128, 185) 
-        
+        uni_run.bold = True        
         doc.add_paragraph() 
 
     doc.save(buffer)
@@ -222,7 +213,7 @@ st.write("Extract faculty data from Khulna University website and export it as I
 
 # User Inputs
 discipline_code = st.text_input("Enter Discipline Short Name:", value="fwt", help="Example: 'fwt' for Forestry and Wood Technology").strip().lower()
-format_choice = st.selectbox("Select Export Format:", ["PDF (ID Cards)", "Word Doc (ID Cards)", "CSV (Spreadsheet)"])
+format_choice = st.selectbox("Select Export Format:", ["PDF", "Word Doc", "CSV (Spreadsheet)"])
 
 if st.button("Scrape Data & Generate File"):
     if not discipline_code:
